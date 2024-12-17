@@ -3,257 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retirement Planner Calculator</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Tabbed Interface for Two Calculators</title>
     <style>
         /* General Styles */
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(to bottom right, #e6f0ff, #fdfbfb);
+            background-color: #f9f9f9;
+        }
+
+        /* Tabs */
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            background-color: #f1f1f1;
+            border-bottom: 2px solid #ccc;
+        }
+
+        .tab {
+            cursor: pointer;
+            padding: 12px 20px;
+            font-size: 16px;
+            color: #555;
+            background-color: #f1f1f1;
+            border: none;
+            outline: none;
+            transition: background 0.3s;
+        }
+
+        .tab.active {
+            background-color: #fff;
+            border: 2px solid #ccc;
+            border-bottom: none;
             color: #333;
         }
 
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 20px;
-        }
-
-        .input-output-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        @media (min-width: 768px) {
-            .input-output-container {
-                flex-direction: row;
-            }
-        }
-
-        .input-section, .result-section {
-            flex: 1;
-        }
-
-        .card {
-            background: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 12px;
-            padding: 20px;
-        }
-
-        /* Input Section */
-        .input-container {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .input-container.savings {
-            margin-top: 30px;
-        }
-
-        .input-container input {
-            width: 70%;
-            margin: 0 auto;
-            padding: 8px 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
+        /* Iframe */
+        iframe {
             display: block;
-            text-align: center;
-        }
-
-        .input-container label {
-            position: absolute;
-            top: -12px;
-            left: 15%;
-            color: #777;
-            font-size: 12px;
-            background: #fff;
-            padding: 0 5px;
-        }
-
-        .radio-group {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .radio-group label {
-            flex: 1;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .radio-group input[type="radio"] {
-            display: none;
-        }
-
-        .radio-group input[type="radio"]:checked + label {
-            background-color: #ffcc00;
-            color: #000;
-            border-color: #ffcc00;
-        }
-
-        button {
-            background-color: #ffcc00;
-            color: #000;
-            font-weight: 600;
-            padding: 8px 12px;
+            width: 100%;
+            height: 100vh;
             border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: space-evenly;
-            margin-top: 10px;
-        }
-
-        /* Results Section */
-        .result-box {
-            background-color: #f5f7fa;
-            border: 2px solid #ffcc00;
-            padding: 10px;
-            margin: 10px auto;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 14px;
-            font-weight: 400;
-            color: #555;
-        }
-
-        .result-value {
-            font-size: 20px;
-            font-weight: bold;
-            color: #2c3e50;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Retirement Planner Calculator</h1>
-        <div class="input-output-container">
-            <!-- Input Section -->
-            <div class="input-section card">
-                <div class="input-container">
-                    <label for="currentAge">Current Age</label>
-                    <input type="number" id="currentAge" placeholder="30" />
-                </div>
-                <div class="input-container">
-                    <label for="retirementAge">Retirement Age</label>
-                    <input type="number" id="retirementAge" placeholder="60" />
-                </div>
-                <label>Gender</label>
-                <div class="radio-group">
-                    <input type="radio" name="gender" id="male" value="male" checked>
-                    <label for="male"><i class="fas fa-male"></i> Male</label>
-                    <input type="radio" name="gender" id="female" value="female">
-                    <label for="female"><i class="fas fa-female"></i> Female</label>
-                </div>
-                <label>Retirement Lifestyle</label>
-                <div class="radio-group">
-                    <input type="radio" name="lifestyle" id="basic" value="2000" checked>
-                    <label for="basic">Basic <small>(RM 2,000/month)</small></label>
-                    <input type="radio" name="lifestyle" id="comfortable" value="4000">
-                    <label for="comfortable">Comfortable <small>(RM 4,000/month)</small></label>
-                    <input type="radio" name="lifestyle" id="premium" value="8000">
-                    <label for="premium">Premium <small>(RM 8,000/month)</small></label>
-                </div>
-                <div class="input-container savings">
-                    <label for="savings">Expected Savings (RM)</label>
-                    <input type="text" id="savings" placeholder="500,000" />
-                </div>
-                <div class="button-container">
-                    <button id="calculateBtn">Calculate</button>
-                    <button id="resetBtn">Reset</button>
-                </div>
-            </div>
-
-            <!-- Results Section -->
-            <div class="result-section card">
-                <h2 style="text-align: center;">Results</h2>
-                <div id="futureExpenseResult" class="result-box">
-                    Future monthly expenses: <span class="result-value">RM ___</span>
-                </div>
-                <div id="sustainResult" class="result-box">
-                    Your savings can sustain you for: <span class="result-value">___ years and ___ months</span>
-                </div>
-                <div id="shortfallYearResult" class="result-box">
-                    Shortfall to survive: <span class="result-value">___ years</span>
-                </div>
-                <div id="shortfallAmountResult" class="result-box">
-                    Shortfall amount: <span class="result-value">RM ___</span>
-                </div>
-            </div>
-        </div>
+    <!-- Tabs -->
+    <div class="tab-container">
+        <button class="tab active" onclick="loadTab(event, 'Retirement Calculator.html')">Retirement Planner</button>
+        <button class="tab" onclick="loadTab(event, 'Calculator.html')">Calculator Tool</button>
     </div>
 
+    <!-- Iframe for Content -->
+    <iframe id="contentFrame" src="Retirement Calculator.html"></iframe>
+
     <script>
-        document.getElementById("savings").addEventListener("input", function (event) {
-            const value = event.target.value.replace(/,/g, '');
-            if (!isNaN(value) && value !== '') {
-                event.target.value = parseFloat(value).toLocaleString('en-US');
-            }
-        });
+        function loadTab(event, file) {
+            // Update iframe source
+            document.getElementById("contentFrame").src = file;
 
-        document.getElementById("calculateBtn").addEventListener("click", function () {
-            const savings = parseFloat(document.getElementById("savings").value.replace(/,/g, '')) || 0;
-            const lifestyle = parseFloat(document.querySelector('input[name="lifestyle"]:checked').value);
-            const retirementAge = parseInt(document.getElementById("retirementAge").value);
-            const gender = document.querySelector('input[name="gender"]:checked').value;
-
-            const lifeExpectancy = gender === "male" ? 75 : 80;
-            const inflationRate = 0.0315;
-            const yearsToRetirement = retirementAge - parseInt(document.getElementById("currentAge").value);
-
-            const futureMonthlyExpense = lifestyle * Math.pow(1 + inflationRate, yearsToRetirement);
-            const totalYearsToSurvive = lifeExpectancy - retirementAge;
-
-            let remainingSavings = savings;
-            let monthlyExpense = futureMonthlyExpense;
-            let yearsSustained = 0;
-
-            while (remainingSavings >= monthlyExpense * 12 && yearsSustained < totalYearsToSurvive) {
-                remainingSavings -= monthlyExpense * 12;
-                monthlyExpense *= (1 + inflationRate);
-                yearsSustained++;
-            }
-
-            const remainingMonths = Math.floor(remainingSavings / monthlyExpense);
-            const shortfallYears = totalYearsToSurvive - yearsSustained;
-
-            let shortfallAmount = 0;
-            for (let i = 0; i < shortfallYears; i++) {
-                shortfallAmount += monthlyExpense * 12;
-                monthlyExpense *= (1 + inflationRate);
-            }
-
-            document.getElementById("futureExpenseResult").innerHTML = `Future monthly expenses: <span class="result-value">RM ${futureMonthlyExpense.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>`;
-            document.getElementById("sustainResult").innerHTML = `Your savings can sustain you for: <span class="result-value">${yearsSustained} years and ${remainingMonths} months</span>`;
-            document.getElementById("shortfallYearResult").innerHTML = `Shortfall to survive: <span class="result-value">${shortfallYears} years</span>`;
-            document.getElementById("shortfallAmountResult").innerHTML = `Shortfall amount: <span class="result-value">RM ${shortfallAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>`;
-        });
-
-        document.getElementById("resetBtn").addEventListener("click", () => {
-            location.reload();
-        });
+            // Update active tab styling
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
     </script>
 </body>
 </html>

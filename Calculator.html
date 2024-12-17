@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(180deg, #f8f9fa, #eaecef);
+        }
+
+        .banner {
+            background: linear-gradient(90deg, #FFD966, #FFAC41);
+            height: 200px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 2px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .floating-label {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .floating-label input {
+            padding: 14px 12px 4px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            width: 100%;
+            outline: none;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .floating-label label {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            font-size: 16px;
+            color: #6b7280;
+            pointer-events: none;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .floating-label input:focus + label,
+        .floating-label input:not(:placeholder-shown) + label {
+            top: -20px;
+            font-size: 12px;
+            color: #ffac41;
+        }
+
+        .button {
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            background-color: #ffac41;
+        }
+
+        .total-amount-display {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .chart-container canvas {
+            width: 100%;
+            height: auto;
+        }
+
+        .legend {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 10px;
+        }
+
+        table thead {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body class="text-gray-900 font-sans antialiased">
+
+<!-- Sticky Navigation Bar -->
+<nav class="sticky top-0 bg-white shadow-md z-10">
+    <div class="container mx-auto flex justify-between items-center py-4">
+        <div class="flex items-center">
+            <!-- Maybank Logo -->
+            <img src="https://upload.wikimedia.org/wikipedia/en/thumb/1/14/Maybank_logo.svg/2560px-Maybank_logo.svg.png" 
+                 alt="Maybank Logo" class="h-10 w-auto mr-3">
+            <a href="#" class="text-2xl font-bold text-gray-700">Calculator Tool</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="banner">
+    <div class="text-center">
+        <h1 class="text-4xl font-bold text-white">Calculator Tool</h1>
+    </div>
+</section>
+
+<section class="py-12 bg-gray-100">
+    <div class="container mx-auto max-w-5xl">
+        <!-- Investment Calculator -->
+        <div id="investment" class="bg-white shadow-md rounded-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6 text-center">Investment Calculator</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="floating-label">
+                    <input type="text" id="investmentPrincipalAmount" placeholder=" " oninput="formatThousandSeparator(this)">
+                    <label for="investmentPrincipalAmount">Principal Amount (RM)</label>
+                </div>
+                <div class="floating-label">
+                    <input type="text" id="investmentDividendRate" placeholder=" " oninput="validateDecimalInput(this)">
+                    <label for="investmentDividendRate">Dividend Rate (%)</label>
+                </div>
+                <div class="floating-label">
+                    <input type="text" id="investmentYears" placeholder=" " oninput="formatThousandSeparator(this)">
+                    <label for="investmentYears">Years Financing</label>
+                </div>
+            </div>
+            <button onclick="calculateInvestment()" class="button w-full bg-yellow-500 text-white font-bold py-3 rounded-lg mt-4">Calculate</button>
+            <div id="investmentTotalAmountDisplay" class="total-amount-display hidden"></div>
+            <div class="chart-container">
+                <canvas id="investmentPieChart"></canvas>
+            </div>
+            <div id="investmentLegend" class="legend hidden"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>Principal Balance</th>
+                        <th>Dividend</th>
+                        <th>Year End Balance</th>
+                    </tr>
+                </thead>
+                <tbody id="investmentTableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Self-Saving Calculator -->
+        <div id="saving" class="bg-white shadow-md rounded-lg p-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6 text-center">Self-Saving Calculator</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="floating-label">
+                    <input type="text" id="savingAmount" placeholder=" " oninput="formatThousandSeparator(this)">
+                    <label for="savingAmount">Saving (RM)</label>
+                </div>
+                <div class="floating-label">
+                    <input type="text" id="savingDividendRate" placeholder=" " oninput="validateDecimalInput(this)">
+                    <label for="savingDividendRate">Dividend Rate (%)</label>
+                </div>
+                <div class="floating-label">
+                    <input type="text" id="savingYears" placeholder=" " oninput="formatThousandSeparator(this)">
+                    <label for="savingYears">Years Saving</label>
+                </div>
+            </div>
+            <button onclick="calculateSaving()" class="button w-full bg-yellow-500 text-white font-bold py-3 rounded-lg mt-4">Calculate</button>
+            <div id="savingTotalAmountDisplay" class="total-amount-display hidden"></div>
+            <div class="chart-container">
+                <canvas id="savingPieChart"></canvas>
+            </div>
+            <div id="savingLegend" class="legend hidden"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>Saving Balance</th>
+                        <th>Dividend</th>
+                        <th>Year End Balance</th>
+                    </tr>
+                </thead>
+                <tbody id="savingTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<script>
+    function formatThousandSeparator(element) {
+        element.value = element.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function validateDecimalInput(element) {
+        element.value = element.value.replace(/[^0-9.]/g, '');
+    }
+
+    function renderPieChart(ctxId, data, labels, colors) {
+        const ctx = document.getElementById(ctxId).getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels, datasets: [{ data, backgroundColor: colors }] },
+            options: { responsive: true, maintainAspectRatio: true, cutout: '60%' }
+        });
+    }
+
+    function calculateGeneric(type, amountId, rateId, yearsId, tableBodyId, pieChartId, legendId, totalId) {
+        const principal = parseFloat(document.getElementById(amountId).value.replace(/,/g, '')) || 0;
+        const rate = parseFloat(document.getElementById(rateId).value) / 100 || 0;
+        const years = parseInt(document.getElementById(yearsId).value) || 0;
+
+        let balance = principal, totalDividend = 0;
+        const tableBody = document.getElementById(tableBodyId);
+        tableBody.innerHTML = '';
+
+        for (let i = 1; i <= years; i++) {
+            const dividend = balance * rate; // Updated to use annual dividends
+            totalDividend += dividend;
+            balance += dividend;
+
+            tableBody.innerHTML += `<tr>
+                <td>${i}</td>
+                <td>RM ${((balance - dividend).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                <td>RM ${(dividend.toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                <td>RM ${(balance.toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+            </tr>`;
+        }
+
+        document.getElementById(totalId).innerText = `Total: RM ${(balance.toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+        document.getElementById(totalId).classList.remove('hidden');
+
+        renderPieChart(pieChartId, [principal, totalDividend], ['Principal Amount', 'Dividend Earned'], ['#36A2EB', '#FFCE56']);
+
+        document.getElementById(legendId).innerHTML = `
+            <p><span style="color: #36A2EB;">■</span> Principal Amount: RM ${principal.toLocaleString()}</p>
+            <p><span style="color: #FFCE56;">■</span> Dividend Earned: RM ${totalDividend.toLocaleString()}</p>
+            <p><strong>Total Amount: RM ${balance.toLocaleString()}</strong></p>
+        `;
+        document.getElementById(legendId).classList.remove('hidden');
+    }
+
+    function calculateInvestment() {
+        calculateGeneric(
+            'investment',
+            'investmentPrincipalAmount',
+            'investmentDividendRate',
+            'investmentYears',
+            'investmentTableBody',
+            'investmentPieChart',
+            'investmentLegend',
+            'investmentTotalAmountDisplay'
+        );
+    }
+
+    function calculateSaving() {
+        calculateGeneric(
+            'saving',
+            'savingAmount',
+            'savingDividendRate',
+            'savingYears',
+            'savingTableBody',
+            'savingPieChart',
+            'savingLegend',
+            'savingTotalAmountDisplay'
+        );
+    }
+</script>
+</body>
+</html>
