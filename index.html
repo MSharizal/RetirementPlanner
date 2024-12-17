@@ -51,9 +51,14 @@
             padding: 20px;
         }
 
+        /* Input Section */
         .input-container {
             position: relative;
             margin-bottom: 20px;
+        }
+
+        .input-container.savings {
+            margin-top: 30px;
         }
 
         .input-container input {
@@ -75,11 +80,6 @@
             font-size: 12px;
             background: #fff;
             padding: 0 5px;
-        }
-
-        /* Lower the Expected Savings box */
-        .input-container.savings {
-            margin-top: 20px; /* Add space above the box */
         }
 
         .radio-group {
@@ -120,6 +120,13 @@
             transition: background 0.3s ease;
         }
 
+        .button-container {
+            display: flex;
+            justify-content: space-evenly;
+            margin-top: 10px;
+        }
+
+        /* Results Section */
         .result-box {
             background-color: #f5f7fa;
             border: 2px solid #ffcc00;
@@ -128,15 +135,14 @@
             border-radius: 8px;
             text-align: center;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 400;
+            color: #555;
         }
 
-        .sticky-buttons {
-            display: flex;
-            justify-content: space-evenly;
-            padding: 10px 0;
-            background: #fff;
-            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+        .result-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
         }
     </style>
 </head>
@@ -144,6 +150,7 @@
     <div class="container">
         <h1>Retirement Planner Calculator</h1>
         <div class="input-output-container">
+            <!-- Input Section -->
             <div class="input-section card">
                 <div class="input-container">
                     <label for="currentAge">Current Age</label>
@@ -173,17 +180,28 @@
                     <label for="savings">Expected Savings (RM)</label>
                     <input type="text" id="savings" placeholder="500,000" />
                 </div>
+                <div class="button-container">
+                    <button id="calculateBtn">Calculate</button>
+                    <button id="resetBtn">Reset</button>
+                </div>
             </div>
+
+            <!-- Results Section -->
             <div class="result-section card">
                 <h2 style="text-align: center;">Results</h2>
-                <div id="sustainResult" class="result-box">Your savings can sustain you for: ___ years and ___ months.</div>
-                <div id="shortfallYearResult" class="result-box">Shortfall to survive: ___ years.</div>
-                <div id="shortfallAmountResult" class="result-box">Shortfall amount: RM ___</div>
+                <div id="futureExpenseResult" class="result-box">
+                    Future monthly expenses: <span class="result-value">RM ___</span>
+                </div>
+                <div id="sustainResult" class="result-box">
+                    Your savings can sustain you for: <span class="result-value">___ years and ___ months</span>
+                </div>
+                <div id="shortfallYearResult" class="result-box">
+                    Shortfall to survive: <span class="result-value">___ years</span>
+                </div>
+                <div id="shortfallAmountResult" class="result-box">
+                    Shortfall amount: <span class="result-value">RM ___</span>
+                </div>
             </div>
-        </div>
-        <div style="display: flex; justify-content: space-evenly;">
-            <button id="calculateBtn">Calculate</button>
-            <button id="resetBtn">Reset</button>
         </div>
     </div>
 
@@ -203,30 +221,34 @@
 
             const lifeExpectancy = gender === "male" ? 75 : 80;
             const inflationRate = 0.0315;
+            const yearsToRetirement = retirementAge - parseInt(document.getElementById("currentAge").value);
+
+            const futureMonthlyExpense = lifestyle * Math.pow(1 + inflationRate, yearsToRetirement);
             const totalYearsToSurvive = lifeExpectancy - retirementAge;
 
             let remainingSavings = savings;
-            let annualExpense = lifestyle * 12;
+            let monthlyExpense = futureMonthlyExpense;
             let yearsSustained = 0;
 
-            while (remainingSavings >= annualExpense && yearsSustained < totalYearsToSurvive) {
-                remainingSavings -= annualExpense;
-                annualExpense *= (1 + inflationRate);
+            while (remainingSavings >= monthlyExpense * 12 && yearsSustained < totalYearsToSurvive) {
+                remainingSavings -= monthlyExpense * 12;
+                monthlyExpense *= (1 + inflationRate);
                 yearsSustained++;
             }
 
-            const remainingMonths = Math.floor(remainingSavings / (annualExpense / 12));
+            const remainingMonths = Math.floor(remainingSavings / monthlyExpense);
             const shortfallYears = totalYearsToSurvive - yearsSustained;
 
             let shortfallAmount = 0;
             for (let i = 0; i < shortfallYears; i++) {
-                shortfallAmount += annualExpense;
-                annualExpense *= (1 + inflationRate);
+                shortfallAmount += monthlyExpense * 12;
+                monthlyExpense *= (1 + inflationRate);
             }
 
-            document.getElementById("sustainResult").innerText = `Your savings can sustain you for: ${yearsSustained} years and ${remainingMonths} months.`;
-            document.getElementById("shortfallYearResult").innerText = `Shortfall to survive: ${shortfallYears} years.`;
-            document.getElementById("shortfallAmountResult").innerText = `Shortfall amount: RM ${shortfallAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+            document.getElementById("futureExpenseResult").innerHTML = `Future monthly expenses: <span class="result-value">RM ${futureMonthlyExpense.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>`;
+            document.getElementById("sustainResult").innerHTML = `Your savings can sustain you for: <span class="result-value">${yearsSustained} years and ${remainingMonths} months</span>`;
+            document.getElementById("shortfallYearResult").innerHTML = `Shortfall to survive: <span class="result-value">${shortfallYears} years</span>`;
+            document.getElementById("shortfallAmountResult").innerHTML = `Shortfall amount: <span class="result-value">RM ${shortfallAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>`;
         });
 
         document.getElementById("resetBtn").addEventListener("click", () => {
